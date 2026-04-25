@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<body style="background:black;color:white;text-align:center;font-family:sans-serif;">
+
+<h1>Socrates</h1>
+
+<p id="q">Press button</p>
+
+<input id="a" placeholder="Your answer">
+<br><br>
+
+<button onclick="getQ()">New Question</button>
+<button onclick="sendA()">Answer</button>
+
+<script>
+let currentQ = "";
+
+async function getQ() {
+  const res = await fetch("https://socrates-api-fg0h.onrender.com/ai", {
+    method: "POST"
+  });
+  const text = await res.text();
+  currentQ = text;
+  document.getElementById("q").innerText = text;
+}
+
+async function sendA() {
+  const ans = document.getElementById("a").value;
+
+  const res = await fetch("https://socrates-api-fg0h.onrender.com/ai", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({answer: ans})
+  });
+
+  const text = await res.text();
+  document.getElementById("q").innerText = text;
+}
+</script>
+
+</body>
+</html>
