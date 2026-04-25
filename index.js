@@ -30,7 +30,9 @@ app.post("/ai", async (req, res) => {
     const data = await response.json();
 
     // ΣΤΕΛΝΟΥΜΕ ΜΟΝΟ ΤΟ ΚΕΙΜΕΝΟ
-    res.json(data.choices[0].message.content);
+   res.send(
+  data.choices[0].message.content.replace(/"/g, "")
+);
 
   } catch (error) {
     res.send("Error generating response");
