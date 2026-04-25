@@ -51,3 +51,6 @@ async function sendA() {
 
 </body>
 </html>
+const data = await res.json();
+const text = data.data;
+document.getElementById("q").innerText = text;
