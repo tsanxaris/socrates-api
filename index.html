@@ -1,20 +1,87 @@
-aasync function getQ() {
-  try {
-    document.getElementById("q").innerText = "Σκέφτομαι...";
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Socrates Game</title>
+</head>
 
-    const res = await fetch("https://socrates-api-fg0h.onrender.com/ai", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
+<body style="background:black;color:white;text-align:center;font-family:sans-serif;">
+
+  <h1>Socrates</h1>
+
+  <p id="q">Press New Question</p>
+
+  <input id="a" placeholder="Your answer" style="padding:10px;width:60%;">
+  <br><br>
+
+  <button onclick="getQ()">New Question</button>
+  <button onclick="sendA()">Answer</button>
+
+  <script>
+    let currentQ = "";
+
+    // 👉 Παίρνει το κείμενο από το HTML που επιστρέφει το API
+    function cleanResponse(raw) {
+      const doc = new DOMParser().parseFromString(raw, "text/html");
+      const question = doc.querySelector("#question");
+
+      if (question) {
+        return question.innerText.trim();
       }
-    });
 
-    const data = await res.json();
+      return raw.replace(/<[^>]*>/g, "").trim();
+    }
 
-    currentQ = data.text;
-    document.getElementById("q").innerText = data.text;
+    async function getQ() {
+      try {
+        document.getElementById("q").innerText = "Σκέφτομαι...";
 
-  } catch (e) {
-    document.getElementById("q").innerText = "Error loading question";
-  }
-}
+        const res = await fetch("https://socrates-api-fg0h.onrender.com/ai", {
+          method: "POST"
+        });
+
+        const raw = await res.text();
+        const text = cleanResponse(raw);
+
+        currentQ = text;
+        document.getElementById("q").innerText = text;
+
+      } catch (e) {
+        document.getElementById("q").innerText = "Error loading question";
+      }
+    }
+
+    async function sendA() {
+      try {
+        const ans = document.getElementById("a").value;
+
+        if (!ans) {
+          document.getElementById("q").innerText = "Γράψε μια απάντηση πρώτα";
+          return;
+        }
+
+        const res = await fetch("https://socrates-api-fg0h.onrender.com/ai", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            question: currentQ,
+            answer: ans
+          })
+        });
+
+        const raw = await res.text();
+        const text = cleanResponse(raw);
+
+        document.getElementById("q").innerText = text;
+        document.getElementById("a").value = "";
+
+      } catch (e) {
+        document.getElementById("q").innerText = "Error sending answer";
+      }
+    }
+  </script>
+
+</body>
+</html>
