@@ -1,21 +1,20 @@
-async function getQ() {
-  document.getElementById("q").innerText = "Ξυπνάω τον Σωκράτη...";
+aasync function getQ() {
+  try {
+    document.getElementById("q").innerText = "Σκέφτομαι...";
 
-  for (let i = 0; i < 2; i++) {
-    try {
-      const res = await fetch("https://socrates-api-fg0h.onrender.com/ai", {
-        method: "POST"
-      });
+    const res = await fetch("https://socrates-api-fg0h.onrender.com/ai", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
 
-      const text = await res.text();
-      currentQ = text;
+    const data = await res.json();
 
-      document.getElementById("q").innerText = text;
-      return;
+    currentQ = data.text;
+    document.getElementById("q").innerText = data.text;
 
-    } catch {}
+  } catch (e) {
+    document.getElementById("q").innerText = "Error loading question";
   }
-
-  document.getElementById("q").innerText = "Ο Σωκράτης κοιμάται ακόμα 😴";
 }
- 
