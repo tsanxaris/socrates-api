@@ -19,7 +19,12 @@ async function getQ() {
   const res = await fetch("https://socrates-api-fg0h.onrender.com/ai", {
     method: "POST"
   });
-  const text = await res.text();
+
+  const data = await res.json();
+
+  // Παίρνουμε ΜΟΝΟ το καθαρό κείμενο
+  const text = data.data;
+
   currentQ = text;
   document.getElementById("q").innerText = text;
 }
@@ -30,10 +35,16 @@ async function sendA() {
   const res = await fetch("https://socrates-api-fg0h.onrender.com/ai", {
     method: "POST",
     headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({answer: ans})
+    body: JSON.stringify({
+      question: currentQ,
+      answer: ans
+    })
   });
 
-  const text = await res.text();
+  const data = await res.json();
+
+  const text = data.data;
+
   document.getElementById("q").innerText = text;
 }
 </script>
