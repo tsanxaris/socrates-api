@@ -16,41 +16,45 @@
 let currentQ = "";
 
 async function getQ() {
-  const res = await fetch("https://socrates-api-fg0h.onrender.com/ai", {
-    method: "POST"
-  });
+  try {
+    const res = await fetch("https://socrates-api-fg0h.onrender.com/ai", {
+      method: "POST"
+    });
 
-  const data = await res.json();
+    const data = await res.json();
+    const text = data.data;
 
-  // Παίρνουμε ΜΟΝΟ το καθαρό κείμενο
-  const text = data.data;
+    currentQ = text;
+    document.getElementById("q").innerText = text;
 
-  currentQ = text;
-  document.getElementById("q").innerText = text;
+  } catch (e) {
+    document.getElementById("q").innerText = "Error loading question";
+  }
 }
 
 async function sendA() {
-  const ans = document.getElementById("a").value;
+  try {
+    const ans = document.getElementById("a").value;
 
-  const res = await fetch("https://socrates-api-fg0h.onrender.com/ai", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({
-      question: currentQ,
-      answer: ans
-    })
-  });
+    const res = await fetch("https://socrates-api-fg0h.onrender.com/ai", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({
+        question: currentQ,
+        answer: ans
+      })
+    });
 
-  const data = await res.json();
+    const data = await res.json();
+    const text = data.data;
 
-  const text = data.data;
+    document.getElementById("q").innerText = text;
 
-  document.getElementById("q").innerText = text;
+  } catch (e) {
+    document.getElementById("q").innerText = "Error sending answer";
+  }
 }
 </script>
 
 </body>
 </html>
-const data = await res.json();
-const text = data.data;
-document.getElementById("q").innerText = text;
