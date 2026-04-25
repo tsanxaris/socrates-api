@@ -20,18 +20,19 @@
   <script>
     let currentQ = "";
 
-    // 👉 Παίρνει το κείμενο από το HTML που επιστρέφει το API
+    // 👉 Παίρνει την ερώτηση από το HTML response
     function cleanResponse(raw) {
       const doc = new DOMParser().parseFromString(raw, "text/html");
-      const question = doc.querySelector("#question");
+      const el = doc.querySelector("#question");
 
-      if (question) {
-        return question.innerText.trim();
+      if (el) {
+        return el.innerText.trim();
       }
 
       return raw.replace(/<[^>]*>/g, "").trim();
     }
 
+    // 👉 Φέρνει νέα ερώτηση
     async function getQ() {
       try {
         document.getElementById("q").innerText = "Σκέφτομαι...";
@@ -40,7 +41,8 @@
           method: "POST"
         });
 
-        const raw = await res.text();
+        const raw = await res.text(); // 🔥 ΟΧΙ json()
+
         const text = cleanResponse(raw);
 
         currentQ = text;
@@ -51,6 +53,7 @@
       }
     }
 
+    // 👉 Στέλνει απάντηση
     async function sendA() {
       try {
         const ans = document.getElementById("a").value;
@@ -71,7 +74,8 @@
           })
         });
 
-        const raw = await res.text();
+        const raw = await res.text(); // 🔥 ΟΧΙ json()
+
         const text = cleanResponse(raw);
 
         document.getElementById("q").innerText = text;
