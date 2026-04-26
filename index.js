@@ -6,6 +6,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// 👉 παίρνει το key από Render
 const API_KEY = process.env.GEMINI_API_KEY;
 
 app.post("/ai", async (req, res) => {
@@ -39,16 +40,22 @@ app.post("/ai", async (req, res) => {
 
     const data = await response.json();
 
-    console.log(data);
+    console.log("GEMINI RESPONSE:", data);
 
-    const text =
-      data.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "Error from Gemini";
+    let text = "Error from Gemini";
+
+    if (data.candidates && data.candidates.length > 0) {
+      const parts = data.candidates[0].content.parts;
+
+      if (parts && parts.length > 0) {
+        text = parts.map(p => p.text).join(" ");
+      }
+    }
 
     res.json({ text });
 
   } catch (err) {
-    console.log(err);
+    console.log("SERVER ERROR:", err);
     res.json({ text: "Server error" });
   }
 });
