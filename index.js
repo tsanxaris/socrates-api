@@ -6,7 +6,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const API_KEY = process.env.OPENAI_API_KEY;
+const API_KEY = process.env.GEMINI_API_KEY;
 
 app.post("/ai", async (req, res) => {
   try {
@@ -20,31 +20,30 @@ app.post("/ai", async (req, res) => {
       prompt = `Question: ${question}\nUser answer: ${answer}\nRespond like Socrates with another question.`;
     }
 
-    // ✅ ΝΕΟ endpoint για sk-proj
-    const response = await fetch("https://api.openai.com/v1/responses", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${API_KEY}`
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        input: prompt
-      })
-    });
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [{ text: prompt }]
+            }
+          ]
+        })
+      }
+    );
 
     const data = await response.json();
 
-    console.log(data); // debug
+    console.log(data);
 
-    if (!data.output) {
-      return res.json({
-        text: "ERROR: " + JSON.stringify(data)
-      });
-    }
-
-    // ✅ παίρνει απάντηση σωστά
-    const text = data.output[0].content[0].text;
+    const text =
+      data.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "Error from Gemini";
 
     res.json({ text });
 
