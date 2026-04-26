@@ -6,7 +6,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 👉 Παίρνει το key από Render
 const API_KEY = process.env.OPENAI_API_KEY;
 
 app.post("/ai", async (req, res) => {
@@ -38,8 +37,6 @@ app.post("/ai", async (req, res) => {
 
     const data = await response.json();
 
-    console.log(data); // για debug
-
     if (!data.choices) {
       return res.json({ text: "OpenAI error" });
     }
@@ -54,7 +51,6 @@ app.post("/ai", async (req, res) => {
   }
 });
 
-// 👉 Render port
 app.listen(process.env.PORT, () => {
   console.log("Server running");
 });
