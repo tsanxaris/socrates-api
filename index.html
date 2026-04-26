@@ -9,7 +9,10 @@
 
   <h1>Socrates AI</h1>
 
-  <p id="q">Press New Question</p>
+  <!-- 👉 ΕΔΩ ΘΑ ΦΑΙΝΕΤΑΙ Η ΕΡΩΤΗΣΗ -->
+  <div id="q" style="border:2px solid white;padding:20px;width:60%;margin:20px auto;">
+    Press New Question
+  </div>
 
   <input id="a" placeholder="Your answer">
   <br><br>
@@ -21,16 +24,23 @@
     let currentQ = "";
 
     async function getQ() {
-      const res = await fetch("https://socrates-api-fg0h.onrender.com/ai", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({})
-      });
+      document.getElementById("q").innerText = "Σκέφτομαι...";
 
-      const data = await res.json();
+      try {
+        const res = await fetch("https://socrates-api-fg0h.onrender.com/ai", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({})
+        });
 
-      currentQ = data.text;
-      document.getElementById("q").innerText = data.text;
+        const data = await res.json();
+
+        currentQ = data.text;
+        document.getElementById("q").innerText = data.text;
+
+      } catch {
+        document.getElementById("q").innerText = "Error loading question";
+      }
     }
 
     async function sendA() {
