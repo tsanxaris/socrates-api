@@ -6,7 +6,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 👉 παίρνει το API key από Render (Environment Variables)
 const API_KEY = process.env.OPENAI_API_KEY;
 
 app.post("/ai", async (req, res) => {
@@ -21,7 +20,8 @@ app.post("/ai", async (req, res) => {
       prompt = `Question: ${question}\nUser answer: ${answer}\nRespond like Socrates with another question.`;
     }
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    // ✅ ΝΕΟ endpoint για sk-proj
+    const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -29,34 +29,31 @@ app.post("/ai", async (req, res) => {
       },
       body: JSON.stringify({
         model: "gpt-4o-mini",
-        messages: [
-          { role: "system", content: "You are Socrates." },
-          { role: "user", content: prompt }
-        ]
+        input: prompt
       })
     });
 
     const data = await response.json();
 
-    // 🔥 DEBUG: δείξε πραγματικό error αν υπάρχει
-    if (!data.choices) {
-      console.log("OPENAI ERROR:", data);
+    console.log(data); // debug
+
+    if (!data.output) {
       return res.json({
         text: "ERROR: " + JSON.stringify(data)
       });
     }
 
-    const text = data.choices[0].message.content;
+    // ✅ παίρνει απάντηση σωστά
+    const text = data.output[0].content[0].text;
 
     res.json({ text });
 
   } catch (err) {
-    console.log("SERVER ERROR:", err);
+    console.log(err);
     res.json({ text: "Server error" });
   }
 });
 
-// 👉 Render port
 app.listen(process.env.PORT, () => {
   console.log("Server running");
 });
