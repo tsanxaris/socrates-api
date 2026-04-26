@@ -6,8 +6,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 👉 παίρνει το key από Render
-const API_KEY = process.env.GEMINI_API_KEY;
+const API_KEY = process.env.OPENAI_API_KEY;
 
 app.post("/ai", async (req, res) => {
   try {
@@ -21,41 +20,34 @@ app.post("/ai", async (req, res) => {
       prompt = `Question: ${question}\nUser answer: ${answer}\nRespond like Socrates with another question.`;
     }
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [{ text: prompt }]
-            }
-          ]
-        })
-      }
-    );
+    const response = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        input: prompt
+      })
+    });
 
     const data = await response.json();
 
-    console.log("GEMINI RESPONSE:", data);
+    console.log(data);
 
-    let text = "Error from Gemini";
-
-    if (data.candidates && data.candidates.length > 0) {
-      const parts = data.candidates[0].content.parts;
-
-      if (parts && parts.length > 0) {
-        text = parts.map(p => p.text).join(" ");
-      }
+    if (!data.output) {
+      return res.json({
+        text: "ERROR: " + JSON.stringify(data)
+      });
     }
+
+    const text = data.output[0].content[0].text;
 
     res.json({ text });
 
   } catch (err) {
-    console.log("SERVER ERROR:", err);
+    console.log(err);
     res.json({ text: "Server error" });
   }
 });
