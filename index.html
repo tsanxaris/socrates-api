@@ -2,12 +2,12 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Socrates</title>
+  <title>Socrates AI</title>
 </head>
 
 <body style="background:black;color:white;text-align:center;font-family:sans-serif;">
 
-  <h1>Socrates</h1>
+  <h1>Socrates AI</h1>
 
   <p id="q">Press New Question</p>
 
@@ -20,52 +20,38 @@
   <script>
     let currentQ = "";
 
-    function cleanResponse(raw) {
-      const doc = new DOMParser().parseFromString(raw, "text/html");
-      const el = doc.querySelector("#question");
-      return el ? el.innerText : raw;
-    }
-
     async function getQ() {
-      try {
-        const res = await fetch("https://socrates-api-fg0h.onrender.com/ai", {
-          method: "POST"
-        });
+      const res = await fetch("https://socrates-api-fg0h.onrender.com/ai", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({})
+      });
 
-        const raw = await res.text();
-        const text = cleanResponse(raw);
+      const data = await res.json();
 
-        currentQ = text;
-        document.getElementById("q").innerText = text;
-
-      } catch {
-        document.getElementById("q").innerText = "Error";
-      }
+      currentQ = data.text;
+      document.getElementById("q").innerText = data.text;
     }
 
     async function sendA() {
-      try {
-        const ans = document.getElementById("a").value;
+      const ans = document.getElementById("a").value;
 
-        const res = await fetch("https://socrates-api-fg0h.onrender.com/ai", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            question: currentQ,
-            answer: ans
-          })
-        });
+      const res = await fetch("https://socrates-api-fg0h.onrender.com/ai", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          question: currentQ,
+          answer: ans
+        })
+      });
 
-        const raw = await res.text();
-        const text = cleanResponse(raw);
+      const data = await res.json();
 
-        document.getElementById("q").innerText = text;
-
-      } catch {
-        document.getElementById("q").innerText = "Error";
-      }
+      document.getElementById("q").innerText = data.text;
     }
   </script>
 
