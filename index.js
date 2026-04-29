@@ -14,10 +14,37 @@ app.post("/ai", async (req, res) => {
 
     let prompt;
 
+    // 🎯 ΝΕΑ ΕΡΩΤΗΣΗ (QUIZ MODE)
     if (!question) {
-      prompt = "Ask a deep Socratic philosophical question.";
-    } else {
-      prompt = `Question: ${question}\nUser answer: ${answer}\nRespond like Socrates with another question.`;
+      prompt = `
+Create a multiple choice quiz question.
+
+Rules:
+- 1 question
+- 4 answers (A, B, C, D)
+- show them clearly
+- at the end write: Correct: X
+- keep it simple
+`;
+    }
+
+    // 🎯 ΕΛΕΓΧΟΣ ΑΠΑΝΤΗΣΗΣ
+    else {
+      prompt = `
+Question: ${question}
+User answer: ${answer}
+
+If correct:
+- say "Correct ✅"
+- give a KEY (one word only)
+- say "Προχώρα στο επόμενο"
+
+If wrong:
+- say "Wrong ❌"
+- say "Try again"
+
+Keep it short.
+`;
     }
 
     const response = await fetch("https://api.openai.com/v1/responses", {
@@ -34,7 +61,7 @@ app.post("/ai", async (req, res) => {
 
     const data = await response.json();
 
-    console.log(data);
+    console.log("OPENAI:", data);
 
     if (!data.output) {
       return res.json({
@@ -47,7 +74,7 @@ app.post("/ai", async (req, res) => {
     res.json({ text });
 
   } catch (err) {
-    console.log(err);
+    console.log("SERVER ERROR:", err);
     res.json({ text: "Server error" });
   }
 });
