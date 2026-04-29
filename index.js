@@ -2,7 +2,6 @@ import express from "express";
 import cors from "cors";
 
 const app = express();
-
 app.use(cors());
 app.use(express.json());
 
@@ -10,41 +9,39 @@ const API_KEY = process.env.OPENAI_API_KEY;
 
 app.post("/ai", async (req, res) => {
   try {
-    const { question, answer } = req.body || {};
+    const { mode, question, answer, correct } = req.body || {};
 
     let prompt;
 
-    // 🎯 ΝΕΑ ΕΡΩΤΗΣΗ (QUIZ MODE)
-    if (!question) {
+    // 🎯 STEP 1: Δημιουργία ερώτησης
+    if (mode === "question") {
       prompt = `
-Create a multiple choice quiz question.
+Create a Socratic-style multiple choice question.
 
 Rules:
-- 1 question
-- 4 answers (A, B, C, D)
-- show them clearly
-- at the end write: Correct: X
-- keep it simple
+- Philosophical (virtue, truth, knowledge, ethics)
+- Deep and reflective like Socrates
+- 4 options (A, B, C, D)
+- Only one correct answer
+- DO NOT reveal correct answer in visible text
+- At the end include: [ANSWER:X]
+
+Example:
+[ANSWER:B]
 `;
     }
 
-    // 🎯 ΕΛΕΓΧΟΣ ΑΠΑΝΤΗΣΗΣ
+    // 🎯 STEP 2: Έλεγχος απάντησης
     else {
-      prompt = `
-Question: ${question}
-User answer: ${answer}
-
-If correct:
-- say "Correct ✅"
-- give a KEY (one word only)
-- say "Προχώρα στο επόμενο"
-
-If wrong:
-- say "Wrong ❌"
-- say "Try again"
-
-Keep it short.
-`;
+      if (answer === correct) {
+        return res.json({
+          text: `Correct ✅\nKEY: wisdom\nΠροχώρα στο επόμενο`
+        });
+      } else {
+        return res.json({
+          text: `Wrong ❌\nTry again`
+        });
+      }
     }
 
     const response = await fetch("https://api.openai.com/v1/responses", {
@@ -61,20 +58,22 @@ Keep it short.
 
     const data = await response.json();
 
-    console.log("OPENAI:", data);
+    const raw = data.output[0].content[0].text;
 
-    if (!data.output) {
-      return res.json({
-        text: "ERROR: " + JSON.stringify(data)
-      });
-    }
+    // 🔍 βρίσκουμε το σωστό answer
+    const match = raw.match(/\[ANSWER:([A-D])\]/);
+    const correct = match ? match[1] : null;
 
-    const text = data.output[0].content[0].text;
+    // ❌ αφαιρούμε το answer από το text
+    const clean = raw.replace(/\[ANSWER:[A-D]\]/, "").trim();
 
-    res.json({ text });
+    res.json({
+      text: clean,
+      correct
+    });
 
   } catch (err) {
-    console.log("SERVER ERROR:", err);
+    console.log(err);
     res.json({ text: "Server error" });
   }
 });
