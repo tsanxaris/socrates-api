@@ -1,65 +1,65 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
   <title>Socrates AI</title>
 </head>
 
-<body style="background:black;color:white;text-align:center;font-family:sans-serif;">
+<body style="background:black; color:white; text-align:center; font-family:sans-serif;">
 
-  <h1>Socrates AI</h1>
+<h1>Socrates AI</h1>
 
-  <!-- 👉 ΕΔΩ ΘΑ ΦΑΙΝΕΤΑΙ Η ΕΡΩΤΗΣΗ -->
-  <div id="q" style="border:2px solid white;padding:20px;width:60%;margin:20px auto;">
-    Press New Question
-  </div>
+<div id="q" style="border:1px solid white; padding:20px; margin:20px;">
+Press New Question
+</div>
 
-  <input id="a" placeholder="Your answer">
-  <br><br>
+<input id="answer" placeholder="Type A, B, C or D" />
+<br><br>
 
-  <button onclick="getQ()">New Question</button>
-  <button onclick="sendA()">Answer</button>
+<button onclick="getQ()">New Question</button>
+<button onclick="check()">Answer</button>
 
-  <script>
-    let currentQ = "";
+<script>
+let currentQ = "";
+let correctAnswer = null;
 
-    async function getQ() {
-      document.getElementById("q").innerText = "Σκέφτομαι...";
+// 🎯 Πάρε ερώτηση
+async function getQ() {
+  document.getElementById("q").innerText = "Σκέφτομαι...";
 
-      try {
-        const res = await fetch("https://socrates-api-fg0h.onrender.com/ai", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({})
-        });
+  const res = await fetch("https://socrates-api-fg0h.onrender.com/ai", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ mode: "question" })
+  });
 
-        const data = await res.json();
+  const data = await res.json();
 
-        currentQ = data.text;
-        document.getElementById("q").innerText = data.text;
+  currentQ = data.text;
+  correctAnswer = data.correct;
 
-      } catch {
-        document.getElementById("q").innerText = "Error loading question";
-      }
-    }
+  document.getElementById("q").innerText = data.text;
+}
 
-    async function sendA() {
-      const ans = document.getElementById("a").value;
+// 🎯 Έλεγχος απάντησης
+async function check() {
+  const userAnswer = document.getElementById("answer").value.toUpperCase();
 
-      const res = await fetch("https://socrates-api-fg0h.onrender.com/ai", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          question: currentQ,
-          answer: ans
-        })
-      });
+  const res = await fetch("https://socrates-api-fg0h.onrender.com/ai", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      mode: "check",
+      question: currentQ,
+      answer: userAnswer,
+      correct: correctAnswer
+    })
+  });
 
-      const data = await res.json();
+  const data = await res.json();
 
-      document.getElementById("q").innerText = data.text;
-    }
-  </script>
+  document.getElementById("q").innerText = data.text;
+}
+</script>
 
 </body>
 </html>
