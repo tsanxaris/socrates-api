@@ -19,7 +19,6 @@ Press New Question
 <button onclick="check()">Answer</button>
 
 <script>
-let currentQ = "";
 let correctAnswer = null;
 
 // 🎯 Πάρε ερώτηση
@@ -28,28 +27,30 @@ async function getQ() {
 
   const res = await fetch("https://socrates-api-fg0h.onrender.com/ai", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json"
+    },
     body: JSON.stringify({ mode: "question" })
   });
 
   const data = await res.json();
 
-  currentQ = data.text;
   correctAnswer = data.correct;
 
   document.getElementById("q").innerText = data.text;
 }
 
-// 🎯 Έλεγχος απάντησης
+// 🎯 Έλεγχος
 async function check() {
   const userAnswer = document.getElementById("answer").value.toUpperCase();
 
   const res = await fetch("https://socrates-api-fg0h.onrender.com/ai", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json"
+    },
     body: JSON.stringify({
       mode: "check",
-      question: currentQ,
       answer: userAnswer,
       correct: correctAnswer
     })
