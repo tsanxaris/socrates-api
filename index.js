@@ -40,7 +40,7 @@ D) ...
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": \`Bearer \${API_KEY}\`
+          "Authorization": `Bearer ${API_KEY}`   // ✅ σωστό
         },
         body: JSON.stringify({
           model: "gpt-4o-mini",
@@ -49,7 +49,9 @@ D) ...
       });
 
       const data = await response.json();
-      const raw = data.output[0].content[0].text;
+
+      // 🔒 ασφαλές parsing
+      const raw = data?.output?.[0]?.content?.[0]?.text || "";
 
       const match = raw.match(/\[ANSWER:([A-D])\]/);
       const correct = match ? match[1] : null;
@@ -59,10 +61,10 @@ D) ...
       return res.json({ text: clean, correct });
     }
 
-    res.json({ text: "Error" });
+    return res.json({ text: "Error" });
 
   } catch (err) {
-    console.log(err);
+    console.log("ERROR:", err);
     res.json({ text: "Server error" });
   }
 });
