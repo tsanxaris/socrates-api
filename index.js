@@ -17,11 +17,11 @@ app.post("/ai", async (req, res) => {
 You are generating a Socratic quiz.
 
 STRICT RULES:
-- Philosophical question (virtue, truth, ethics, knowledge)
+- Philosophical question (virtue, truth, ethics)
 - Deep like Socrates
 - 4 options (A, B, C, D)
 - Only ONE correct
-- NEVER show correct answer
+- DO NOT reveal the answer
 - DO NOT write "Correct"
 
 FORMAT:
@@ -40,7 +40,7 @@ D) ...
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${API_KEY}`
+          "Authorization": \`Bearer \${API_KEY}\`
         },
         body: JSON.stringify({
           model: "gpt-4o-mini",
