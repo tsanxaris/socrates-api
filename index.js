@@ -9,9 +9,8 @@ const API_KEY = process.env.OPENAI_API_KEY;
 
 app.post("/ai", async (req, res) => {
   try {
-    const { mode, answer, correct } = req.body || {};
+    const { mode } = req.body || {};
 
-    // 🎯 1. Δημιουργία ερώτησης
     if (mode === "question") {
 
       const prompt = `
@@ -19,13 +18,13 @@ You are generating a Socratic quiz.
 
 STRICT RULES:
 - Philosophical question (virtue, truth, ethics, knowledge)
-- Must sound like Socrates (deep & reflective)
+- Deep like Socrates
 - 4 options (A, B, C, D)
-- ONLY one correct
-- NEVER write "Correct" or reveal answer
-- NO explanations
+- Only ONE correct
+- NEVER show correct answer
+- DO NOT write "Correct"
 
-FORMAT EXACTLY:
+FORMAT:
 
 Question: ...
 
@@ -52,31 +51,15 @@ D) ...
       const data = await response.json();
       const raw = data.output[0].content[0].text;
 
-      // 🔍 βρίσκουμε σωστή απάντηση
       const match = raw.match(/\[ANSWER:([A-D])\]/);
-      const correctAnswer = match ? match[1] : null;
+      const correct = match ? match[1] : null;
 
-      // ❌ αφαιρούμε το [ANSWER:X]
-      const cleanText = raw.replace(/\[ANSWER:[A-D]\]/, "").trim();
+      const clean = raw.replace(/\[ANSWER:[A-D]\]/, "").trim();
 
-      return res.json({
-        text: cleanText,
-        correct: correctAnswer
-      });
+      return res.json({ text: clean, correct });
     }
 
-    // 🎯 2. Έλεγχος απάντησης
-    else {
-      if (answer === correct) {
-        return res.json({
-          text: "Correct ✅\nKEY: wisdom\nΠροχώρα στο επόμενο"
-        });
-      } else {
-        return res.json({
-          text: "Wrong ❌\nTry again"
-        });
-      }
-    }
+    res.json({ text: "Error" });
 
   } catch (err) {
     console.log(err);
