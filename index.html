@@ -1,35 +1,16 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Socrates AI</title>
-</head>
-
-<body style="background:black; color:white; text-align:center; font-family:sans-serif;">
-
-<h1>Socrates AI</h1>
-
-<div id="q" style="border:1px solid white; padding:20px; margin:20px;">
-Press New Question
-</div>
-
-<input id="answer" placeholder="Type A, B, C or D" />
-<br><br>
-
-<button onclick="getQ()">New Question</button>
-<button onclick="check()">Answer</button>
-
 <script>
 let correctAnswer = null;
 
-// 🎯 Πάρε ερώτηση
+let total = 0;
+let level = 1;
+
+// 🎯 πάρε ερώτηση
 async function getQ() {
   document.getElementById("q").innerText = "Σκέφτομαι...";
 
   const res = await fetch("https://socrates-api-fg0h.onrender.com/ai", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ mode: "question" })
   });
 
@@ -37,30 +18,53 @@ async function getQ() {
 
   correctAnswer = data.correct;
 
-  document.getElementById("q").innerText = data.text;
+  document.getElementById("q").innerText =
+    `LEVEL ${level}\n\n` + data.text;
 }
 
-// 🎯 Έλεγχος
+// 🎯 έλεγχος
 async function check() {
   const userAnswer = document.getElementById("answer").value.toUpperCase();
 
-  const res = await fetch("https://socrates-api-fg0h.onrender.com/ai", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      mode: "check",
-      answer: userAnswer,
-      correct: correctAnswer
-    })
-  });
+  if (!userAnswer) return;
 
-  const data = await res.json();
+  total++;
 
-  document.getElementById("q").innerText = data.text;
+  if (userAnswer === correctAnswer) {
+    document.getElementById("q").innerText = "Correct ✅";
+  } else {
+    document.getElementById("q").innerText = "Wrong ❌";
+  }
+
+  // 🔼 κάθε 2 ερωτήσεις → level up
+  if (total === 2) {
+    level = 2;
+    setTimeout(() => {
+      alert("🔼 Level 2!");
+      getQ();
+    }, 1000);
+    return;
+  }
+
+  if (total === 4) {
+    level = 3;
+    setTimeout(() => {
+      alert("🔼 Level 3!");
+      getQ();
+    }, 1000);
+    return;
+  }
+
+  // 🎉 ΤΕΛΟΣ (6 ερωτήσεις)
+  if (total === 6) {
+    setTimeout(() => {
+      document.getElementById("q").innerText =
+        "🎉 FINISHED!\n\nKEY: ARETE\nΧρησιμοποίησε το στο επόμενο παιχνίδι!";
+    }, 1000);
+    return;
+  }
+
+  // επόμενη ερώτηση
+  setTimeout(getQ, 1000);
 }
 </script>
-
-</body>
-</html>
