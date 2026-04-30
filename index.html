@@ -1,16 +1,44 @@
 <!DOCTYPE html>
 <html>
-<body style="background:black;color:white;text-align:center;">
+<head>
+  <title>Socrates AI</title>
+</head>
+
+<body style="background:black; color:white; text-align:center; font-family:sans-serif;">
 
 <h1>Socrates AI</h1>
 
-<button onclick="test()">TEST</button>
+<div id="q">Press New Question</div>
 
-<div id="q"></div>
+<button onclick="getQ()">New Question</button>
 
 <script>
-function test(){
-  document.getElementById("q").innerText = "δουλεύει";
+let correctAnswer = null;
+
+async function getQ() {
+  try {
+    document.getElementById("q").innerText = "Σκέφτομαι...";
+
+    const res = await fetch("https://socrates-api-fg0h.onrender.com/ai", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ mode: "question" })
+    });
+
+    const data = await res.json();
+
+    console.log("API:", data);
+
+    correctAnswer = data.correct;
+
+    document.getElementById("q").innerText = data.text;
+
+  } catch (err) {
+    console.log("ERROR:", err);
+    document.getElementById("q").innerText = "API ERROR";
+  }
 }
 </script>
 
