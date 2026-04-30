@@ -12,38 +12,34 @@
 Press New Question
 </div>
 
-<input id="answer" placeholder="A, B, C or D">
+<input id="answer" placeholder="A, B, C or D" style="padding:10px;">
 <br><br>
 
-<button onclick="getQ()">New Question</button>
-<button onclick="check()">Answer</button>
+<button onclick="getQ()" style="padding:10px;">New Question</button>
+<button onclick="check()" style="padding:10px;">Answer</button>
 
 <script>
 let correctAnswer = null;
-let total = 0;
 let level = 1;
+let total = 0;
+let correctCount = 0;
 
 // 🎯 πάρε ερώτηση
 async function getQ() {
-  try {
-    document.getElementById("q").innerText = "Σκέφτομαι...";
+  document.getElementById("q").innerText = "Σκέφτομαι...";
 
-    const res = await fetch("https://socrates-api-fg0h.onrender.com/ai", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ mode: "question" })
-    });
+  const res = await fetch("https://socrates-api-fg0h.onrender.com/ai", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ mode: "question" })
+  });
 
-    const data = await res.json();
+  const data = await res.json();
 
-    correctAnswer = data.correct;
+  correctAnswer = data.correct;
 
-    document.getElementById("q").innerText =
-      `LEVEL ${level}\n\n` + data.text;
-
-  } catch (err) {
-    document.getElementById("q").innerText = "API ERROR";
-  }
+  document.getElementById("q").innerText =
+    `LEVEL ${level}\n\n` + data.text;
 }
 
 // 🎯 έλεγχος
@@ -55,14 +51,17 @@ function check() {
   total++;
 
   if (userAnswer === correctAnswer) {
+    correctCount++;
     document.getElementById("q").innerText = "Correct ✅";
   } else {
     document.getElementById("q").innerText = "Wrong ❌";
   }
 
-  // 🔼 level up κάθε 2
-  if (total === 2) {
+  // 🔼 LEVEL UP ΜΟΝΟ ΑΝ 2 ΣΩΣΤΑ
+  if (correctCount === 2 && level === 1) {
     level = 2;
+    correctCount = 0;
+
     setTimeout(() => {
       alert("🔼 Level 2!");
       getQ();
@@ -70,8 +69,10 @@ function check() {
     return;
   }
 
-  if (total === 4) {
+  if (correctCount === 2 && level === 2) {
     level = 3;
+    correctCount = 0;
+
     setTimeout(() => {
       alert("🔼 Level 3!");
       getQ();
@@ -79,7 +80,7 @@ function check() {
     return;
   }
 
-  // 🎉 τέλος
+  // 🎉 ΤΕΛΟΣ
   if (total === 6) {
     setTimeout(() => {
       document.getElementById("q").innerText =
