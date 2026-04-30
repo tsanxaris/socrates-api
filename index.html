@@ -22,7 +22,7 @@ Press New Question
 let correctAnswer = null;
 let correctCount = 0;
 
-// 🎯 πάρε ερώτηση
+// 🎯 Πάρε ερώτηση
 async function getQ() {
   document.getElementById("q").innerText = "Σκέφτομαι...";
 
@@ -40,7 +40,7 @@ async function getQ() {
     `Correct answers: ${correctCount}/6\n\n` + data.text;
 }
 
-// 🎯 έλεγχος
+// 🎯 Έλεγχος απάντησης
 function check() {
   const userAnswer = document.getElementById("answer").value.toUpperCase();
 
@@ -50,10 +50,10 @@ function check() {
     correctCount++;
 
     document.getElementById("q").innerText =
-      `Correct ✅ (${correctCount}/6)`;
+      `Correct ✅\n\nRight answer: ${correctAnswer}\n(${correctCount}/6)`;
   } else {
     document.getElementById("q").innerText =
-      `Wrong ❌ (${correctCount}/6)`;
+      `Wrong ❌\n\nRight answer: ${correctAnswer}\n(${correctCount}/6)`;
   }
 
   // 🎉 ΤΕΛΟΣ ΜΟΝΟ ΑΝ 6 ΣΩΣΤΕΣ
@@ -61,12 +61,11 @@ function check() {
     setTimeout(() => {
       document.getElementById("q").innerText =
         "🎉 FINISHED!\n\nKEY: ARETE\nΧρησιμοποίησε το στο Quizizz!";
-    }, 1000);
+    }, 1500);
     return;
   }
 
-  // επόμενη ερώτηση
-  setTimeout(getQ, 1000);
+  setTimeout(getQ, 1500);
 }
 </script>
 
