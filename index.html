@@ -1,73 +1,218 @@
 <!DOCTYPE html>
-<html>
+<html lang="el">
 <head>
-  <title>Socrates AI</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Σωκράτης AI</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: white;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 700px;
+      margin-top: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 5px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #bbb;
+      margin-bottom: 20px;
+    }
+
+    #chat {
+      background: #1d1d1d;
+      border: 1px solid #555;
+      border-radius: 12px;
+      padding: 15px;
+      height: 420px;
+      overflow-y: auto;
+    }
+
+    .message {
+      padding: 10px 12px;
+      margin: 10px 0;
+      border-radius: 10px;
+      line-height: 1.4;
+    }
+
+    .socrates {
+      background: #333;
+      text-align: left;
+    }
+
+    .user {
+      background: #555;
+      text-align: right;
+    }
+
+    .input-area {
+      display: flex;
+      margin-top: 12px;
+      gap: 8px;
+    }
+
+    textarea {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      resize: none;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 10px 18px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    #status {
+      margin-top: 8px;
+      color: #bbb;
+      font-size: 14px;
+    }
+  </style>
 </head>
 
-<body style="background:black; color:white; text-align:center; font-family:sans-serif;">
+<body>
 
-<h1>Socrates AI</h1>
+<div class="container">
 
-<div id="q" style="border:1px solid white; padding:20px; margin:20px;">
-Press New Question
+  <h1>ΣΩΚΡΑΤΗΣ</h1>
+
+  <div class="subtitle">
+    Διάλογος περί Κρίσεως
+  </div>
+
+  <div id="chat">
+
+    <div class="message socrates">
+      <strong>Σωκράτης:</strong><br><br>
+      Διάβασες την υπόθεση, Αναζητητή.
+      <br><br>
+      Πες μου λοιπόν:
+      <strong>θεωρείς ότι μια πιθανότητα 92% αποτελεί επαρκή απόδειξη
+      για να τιμωρηθεί ο φοιτητής; Γιατί;</strong>
+    </div>
+
+  </div>
+
+  <div class="input-area">
+
+    <textarea
+      id="message"
+      rows="3"
+      placeholder="Γράψε την απάντησή σου...">
+    </textarea>
+
+    <button onclick="sendMessage()">
+      Αποστολή
+    </button>
+
+  </div>
+
+  <div id="status"></div>
+
 </div>
 
-<input id="answer" placeholder="A, B, C or D" style="padding:10px;">
-<br><br>
-
-<button onclick="getQ()" style="padding:10px;">New Question</button>
-<button onclick="check()" style="padding:10px;">Answer</button>
-
 <script>
-let correctAnswer = null;
-let correctCount = 0;
 
-// 🎯 Πάρε ερώτηση
-async function getQ() {
-  document.getElementById("q").innerText = "Σκέφτομαι...";
+const messages = [];
 
-  const res = await fetch("https://socrates-api-fg0h.onrender.com/ai", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({ mode: "question" })
+async function sendMessage() {
+
+  const input = document.getElementById("message");
+  const text = input.value.trim();
+
+  if (!text) return;
+
+  addMessage("user", text);
+
+  messages.push({
+    role: "user",
+    content: text
   });
 
-  const data = await res.json();
+  input.value = "";
 
-  correctAnswer = data.correct;
+  document.getElementById("status").innerText =
+    "Ο Σωκράτης σκέφτεται...";
 
-  document.getElementById("q").innerText =
-    `Correct answers: ${correctCount}/6\n\n` + data.text;
+  try {
+
+    const response = await fetch("/ai", {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      body: JSON.stringify({
+        messages: messages
+      })
+    });
+
+    const data = await response.json();
+
+    const reply = data.text;
+
+    messages.push({
+      role: "assistant",
+      content: reply
+    });
+
+    addMessage("socrates", reply);
+
+    document.getElementById("status").innerText = "";
+
+  } catch (error) {
+
+    document.getElementById("status").innerText =
+      "Παρουσιάστηκε σφάλμα. Δοκίμασε ξανά.";
+
+  }
 }
 
-// 🎯 Έλεγχος απάντησης
-function check() {
-  const userAnswer = document.getElementById("answer").value.toUpperCase();
+function addMessage(type, text) {
 
-  if (!userAnswer) return;
+  const chat = document.getElementById("chat");
 
-  if (userAnswer === correctAnswer) {
-    correctCount++;
+  const div = document.createElement("div");
 
-    document.getElementById("q").innerText =
-      `Correct ✅\n\nRight answer: ${correctAnswer}\n(${correctCount}/6)`;
+  div.className =
+    "message " + (type === "user" ? "user" : "socrates");
+
+  if (type === "user") {
+    div.innerHTML =
+      "<strong>Εσύ:</strong><br>" + text;
   } else {
-    document.getElementById("q").innerText =
-      `Wrong ❌\n\nRight answer: ${correctAnswer}\n(${correctCount}/6)`;
+    div.innerHTML =
+      "<strong>Σωκράτης:</strong><br>" + text;
   }
 
-  // 🎉 ΤΕΛΟΣ ΜΟΝΟ ΑΝ 6 ΣΩΣΤΕΣ
-  if (correctCount === 6) {
-    setTimeout(() => {
-      document.getElementById("q").innerText =
-        "🎉 FINISHED!\n\nKEY: ARETE\nΧρησιμοποίησε το στο Quizizz!";
-    }, 1500);
-    return;
-  }
+  chat.appendChild(div);
 
-  setTimeout(getQ, 1500);
+  chat.scrollTop = chat.scrollHeight;
 }
+
 </script>
 
 </body>
 </html>
+
+
