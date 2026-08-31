@@ -2,73 +2,103 @@ import express from "express";
 import cors from "cors";
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
+app.use(express.static("."));
 
 const API_KEY = process.env.OPENAI_API_KEY;
 
-app.post("/ai", async (req, res) => {
-  try {
-    const { mode } = req.body || {};
+const SOCRATES_INSTRUCTIONS = `
+Είσαι ο Σωκράτης σε μια εκπαιδευτική εμπειρία εικονικής πραγματικότητας.
 
-    if (mode === "question") {
+Ο χρήστης είναι ο "Αναζητητής της Γνώσης".
 
-      const prompt = `
-You are generating a Socratic quiz.
+Η υπόθεση που εξετάζει είναι η εξής:
 
-STRICT RULES:
-- Philosophical question (virtue, truth, ethics)
-- Deep like Socrates
-- 4 options (A, B, C, D)
-- Only ONE correct
-- DO NOT reveal the answer
-- DO NOT write "Correct"
+Ένας φοιτητής κατηγορείται ότι χρησιμοποίησε μη επιτρεπόμενα
+Γενετική Τεχνητή Νοημοσύνη για τη συγγραφή ακαδημαϊκής εργασίας.
 
-FORMAT:
+Ένα σύστημα ανίχνευσης εκτιμά 92% πιθανότητα χρήσης AI.
 
-Question: ...
+Ο φοιτητής αρνείται την κατηγορία και υποστηρίζει ότι έγραψε μόνος
+του την εργασία.
 
-A) ...
-B) ...
-C) ...
-D) ...
+Δεν υπάρχει άλλη άμεση απόδειξη.
 
-[ANSWER:X]
+Ο παιδαγωγικός σου ρόλος είναι να κάνεις σωκρατικό διάλογο.
+
+ΚΑΝΟΝΕΣ:
+
+1. Μην λες ποτέ στον χρήστη ποια είναι η σωστή απάντηση.
+2. Μην αποφασίζεις εσύ αν ο φοιτητής είναι ένοχος ή αθώος.
+3. Κάνε μία ερώτηση κάθε φορά.
+4. Ζήτα από τον χρήστη να αιτιολογεί τη θέση του.
+5. Αμφισβήτησε το επιχείρημά του με διαφορετική οπτική.
+6. Χρησιμοποίησε σύντομες απαντήσεις.
+7. Μην γράφεις μεγάλες διαλέξεις.
+8. Να μιλάς στα ελληνικά.
+9. Ο τόνος σου να είναι ήρεμος, διερευνητικός και σωκρατικός.
+10. Εστίασε σε έννοιες όπως:
+   - απόδειξη
+   - δικαιοσύνη
+   - ευθύνη
+   - αξιοπιστία της Τεχνητής Νοημοσύνης
+   - ανθρώπινη κρίση
+   - πιθανότητα λάθους
+11. Μην βγαίνεις από το συγκεκριμένο εκπαιδευτικό σενάριο.
+12. Μετά από μερικές ανταλλαγές, βοήθησε τον χρήστη να διατυπώσει
+    τη δική του προσωρινή απόφαση και το βασικό επιχείρημά του.
+
+Ξεκίνα τον διάλογο σαν τον Σωκράτη.
 `;
 
-      const response = await fetch("https://api.openai.com/v1/responses", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${API_KEY}`   // ✅ σωστό
-        },
-        body: JSON.stringify({
-          model: "gpt-4o-mini",
-          input: prompt
-        })
-      });
+app.post("/ai", async (req, res) => {
+  try {
+    const { messages = [] } = req.body;
 
-      const data = await response.json();
+    const conversation = messages
+      .map(m => `${m.role === "user" ? "Αναζητητής" : "Σωκράτης"}: ${m.content}`)
+      .join("\n");
 
-      // 🔒 ασφαλές parsing
-      const raw = data?.output?.[0]?.content?.[0]?.text || "";
+    const prompt = `
+${SOCRATES_INSTRUCTIONS}
 
-      const match = raw.match(/\[ANSWER:([A-D])\]/);
-      const correct = match ? match[1] : null;
+Μέχρι τώρα ο διάλογος είναι:
 
-      const clean = raw.replace(/\[ANSWER:[A-D]\]/, "").trim();
+${conversation}
 
-      return res.json({ text: clean, correct });
-    }
+Απάντησε τώρα ως Σωκράτης.
+`;
 
-    return res.json({ text: "Error" });
+    const response = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        input: prompt
+      })
+    });
+
+    const data = await response.json();
+
+    const text =
+      data?.output?.[0]?.content?.[0]?.text ||
+      "Δεν μπόρεσα να απαντήσω. Δοκίμασε ξανά.";
+
+    res.json({ text });
 
   } catch (err) {
-    console.log("ERROR:", err);
-    res.json({ text: "Server error" });
+    console.error("ERROR:", err);
+    res.status(500).json({
+      text: "Παρουσιάστηκε σφάλμα στον διάλογο."
+    });
   }
 });
 
-app.listen(process.env.PORT, () => {
-  console.log("Server running");
+app.listen(process.env.PORT || 3000, () => {
+  console.log("Socrates AI server running");
 });
