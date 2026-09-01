@@ -3,9 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Σωκράτης AI</title>
 
   <style>
+
     body {
       margin: 0;
       font-family: Arial, sans-serif;
@@ -19,17 +21,20 @@
       width: 90%;
       max-width: 700px;
       margin-top: 20px;
+      padding-bottom: 30px;
     }
 
     h1 {
       text-align: center;
       margin-bottom: 5px;
+      font-size: 38px;
     }
 
     .subtitle {
       text-align: center;
       color: #bbb;
       margin-bottom: 20px;
+      font-size: 18px;
     }
 
     #chat {
@@ -37,15 +42,16 @@
       border: 1px solid #555;
       border-radius: 12px;
       padding: 15px;
-      height: 420px;
+      height: 430px;
       overflow-y: auto;
     }
 
     .message {
-      padding: 10px 12px;
+      padding: 12px 14px;
       margin: 10px 0;
       border-radius: 10px;
-      line-height: 1.4;
+      line-height: 1.5;
+      font-size: 17px;
     }
 
     .socrates {
@@ -54,7 +60,7 @@
     }
 
     .user {
-      background: #555;
+      background: #5a5a5a;
       text-align: right;
     }
 
@@ -66,28 +72,46 @@
 
     textarea {
       flex: 1;
-      padding: 10px;
+      padding: 12px;
       border-radius: 8px;
       border: none;
       resize: none;
       font-size: 16px;
+      font-family: Arial, sans-serif;
     }
 
     button {
-      padding: 10px 18px;
+      padding: 10px 20px;
       border-radius: 8px;
       border: none;
       cursor: pointer;
       font-size: 16px;
     }
 
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
     #status {
-      margin-top: 8px;
+      margin-top: 10px;
       color: #bbb;
       font-size: 14px;
+      min-height: 20px;
     }
+
+    .finished {
+      margin-top: 12px;
+      padding: 12px;
+      border: 1px solid #777;
+      border-radius: 8px;
+      text-align: center;
+      background: #222;
+    }
+
   </style>
 </head>
+
 
 <body>
 
@@ -99,18 +123,34 @@
     Διάλογος περί Κρίσεως
   </div>
 
+
   <div id="chat">
 
     <div class="message socrates">
-      <strong>Σωκράτης:</strong><br><br>
-      Διάβασες την υπόθεση, Αναζητητή.
+
+      <strong>Σωκράτης:</strong>
+
       <br><br>
+
+      Διάβασες την υπόθεση, Αναζητητή.
+
+      <br><br>
+
       Πες μου λοιπόν:
-      <strong>θεωρείς ότι μια πιθανότητα 92% αποτελεί επαρκή απόδειξη
-      για να τιμωρηθεί ο φοιτητής; Γιατί;</strong>
+
+      <strong>
+      θεωρείς ότι μια πιθανότητα 92% αποτελεί επαρκή απόδειξη
+      για να τιμωρηθεί ο φοιτητής;
+      </strong>
+
+      <br><br>
+
+      Αιτιολόγησε τη θέση σου.
+
     </div>
 
   </div>
+
 
   <div class="input-area">
 
@@ -120,99 +160,307 @@
       placeholder="Γράψε την απάντησή σου...">
     </textarea>
 
-    <button onclick="sendMessage()">
+    <button
+      id="sendButton"
+      onclick="sendMessage()">
       Αποστολή
     </button>
 
   </div>
 
-  <div id="status"></div>
+
+  <div id="status">
+    Έγκυρες απαντήσεις: 0/3
+  </div>
+
+
+  <div
+    id="finishedMessage"
+    class="finished"
+    style="display:none;">
+
+    <strong>
+      ✓ Η Δοκιμασία της Κρίσης ολοκληρώθηκε.
+    </strong>
+
+    <br><br>
+
+    Κλείσε το παράθυρο και επέστρεψε στον Ναό
+    για να διατυπώσεις την τελική σου απόφαση.
+
+  </div>
 
 </div>
+
 
 <script>
 
 const messages = [];
 
+let validCount = 0;
+
+let dialogueFinished = false;
+
+
+// ================================
+// ΑΠΟΣΤΟΛΗ ΜΗΝΥΜΑΤΟΣ
+// ================================
+
 async function sendMessage() {
 
-  const input = document.getElementById("message");
-  const text = input.value.trim();
+  if (dialogueFinished) {
+    return;
+  }
 
-  if (!text) return;
+  const input =
+    document.getElementById("message");
 
+  const text =
+    input.value.trim();
+
+
+  if (!text) {
+    return;
+  }
+
+
+  // Εμφάνιση απάντησης χρήστη
   addMessage("user", text);
 
+
+  // Αποθήκευση στη συνομιλία
   messages.push({
     role: "user",
     content: text
   });
 
+
   input.value = "";
+
 
   document.getElementById("status").innerText =
     "Ο Σωκράτης σκέφτεται...";
 
+
   try {
 
-  const response = await fetch("https://socrates-api-fg0h.onrender.com/ai", {
-      method: "POST",
+    const response = await fetch(
+      "https://socrates-api-fg0h.onrender.com/ai",
+      {
 
-      headers: {
-        "Content-Type": "application/json"
-      },
+        method: "POST",
 
-      body: JSON.stringify({
-        messages: messages
-      })
-    });
+        headers: {
+          "Content-Type": "application/json"
+        },
 
-    const data = await response.json();
+        body: JSON.stringify({
 
-    const reply = data.text;
+          messages: messages,
 
+          validCount: validCount
+
+        })
+
+      }
+    );
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        "Server response error"
+      );
+
+    }
+
+
+    const data =
+      await response.json();
+
+
+    // Ασφάλεια σε περίπτωση προβλήματος
+    const reply =
+      data.reply ||
+      "Μπορείς να διατυπώσεις ξανά τη σκέψη σου;";
+
+
+    // Αποθήκευση απάντησης Σωκράτη
     messages.push({
+
       role: "assistant",
+
       content: reply
+
     });
 
-    addMessage("socrates", reply);
 
-    document.getElementById("status").innerText = "";
+    // Εμφάνιση απάντησης
+    addMessage(
+      "socrates",
+      reply
+    );
+
+
+    // ================================
+    // ΕΛΕΓΧΟΣ ΑΠΑΝΤΗΣΗΣ
+    // ================================
+
+    if (data.status === "VALID") {
+
+      validCount++;
+
+    }
+
+
+    // ================================
+    // ΤΕΛΟΣ ΔΙΑΛΟΓΟΥ
+    // ================================
+
+    if (
+      data.done === true ||
+      validCount >= 3
+    ) {
+
+      dialogueFinished = true;
+
+
+      document
+        .getElementById("message")
+        .disabled = true;
+
+
+      document
+        .getElementById("sendButton")
+        .disabled = true;
+
+
+      document
+        .getElementById("status")
+        .innerText =
+        "Έγκυρες απαντήσεις: 3/3";
+
+
+      document
+        .getElementById("finishedMessage")
+        .style.display = "block";
+
+
+      return;
+
+    }
+
+
+    // ================================
+    // ΣΥΝΕΧΕΙΑ ΔΙΑΛΟΓΟΥ
+    // ================================
+
+    document
+      .getElementById("status")
+      .innerText =
+      "Έγκυρες απαντήσεις: "
+      + validCount
+      + "/3";
+
 
   } catch (error) {
 
-    document.getElementById("status").innerText =
+    console.error(error);
+
+    document
+      .getElementById("status")
+      .innerText =
       "Παρουσιάστηκε σφάλμα. Δοκίμασε ξανά.";
 
   }
+
 }
 
-function addMessage(type, text) {
 
-  const chat = document.getElementById("chat");
+// ================================
+// ΕΜΦΑΝΙΣΗ ΜΗΝΥΜΑΤΟΣ
+// ================================
 
-  const div = document.createElement("div");
+function addMessage(
+  type,
+  text
+) {
+
+  const chat =
+    document.getElementById("chat");
+
+
+  const div =
+    document.createElement("div");
+
 
   div.className =
-    "message " + (type === "user" ? "user" : "socrates");
+    "message "
+    + (
+      type === "user"
+        ? "user"
+        : "socrates"
+    );
 
-  if (type === "user") {
-    div.innerHTML =
-      "<strong>Εσύ:</strong><br>" + text;
-  } else {
-    div.innerHTML =
-      "<strong>Σωκράτης:</strong><br>" + text;
-  }
+
+  const label =
+    document.createElement("strong");
+
+
+  label.textContent =
+    type === "user"
+      ? "Εσύ:"
+      : "Σωκράτης:";
+
+
+  div.appendChild(label);
+
+
+  div.appendChild(
+    document.createElement("br")
+  );
+
+
+  div.appendChild(
+    document.createTextNode(text)
+  );
+
 
   chat.appendChild(div);
 
-  chat.scrollTop = chat.scrollHeight;
+
+  chat.scrollTop =
+    chat.scrollHeight;
+
 }
+
+
+// ================================
+// ENTER = ΑΠΟΣΤΟΛΗ
+// SHIFT + ENTER = ΝΕΑ ΓΡΑΜΜΗ
+// ================================
+
+document
+  .getElementById("message")
+  .addEventListener(
+    "keydown",
+    function(event) {
+
+      if (
+        event.key === "Enter" &&
+        !event.shiftKey
+      ) {
+
+        event.preventDefault();
+
+        sendMessage();
+
+      }
+
+    }
+  );
 
 </script>
 
 </body>
 </html>
-
-
