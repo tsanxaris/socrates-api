@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Το Μαντείο της Ευθύνης</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      background:
+        radial-gradient(circle at top, #4d3218 0%, #19110b 45%, #080605 100%);
+      color: #f4e6c4;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .oracle-box {
+      width: 100%;
+      max-width: 760px;
+      background: rgba(14, 10, 7, 0.96);
+      border: 2px solid #a77b3b;
+      border-radius: 16px;
+      box-shadow:
+        0 0 25px rgba(255, 151, 46, 0.25),
+        inset 0 0 30px rgba(255, 151, 46, 0.05);
+      overflow: hidden;
+    }
+
+    .header {
+      text-align: center;
+      padding: 22px;
+      border-bottom: 1px solid #6f512c;
+      background: linear-gradient(
+        180deg,
+        rgba(111, 70, 24, 0.35),
+        rgba(20, 13, 8, 0.15)
+      );
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 28px;
+      color: #f5c46d;
+      letter-spacing: 1px;
+    }
+
+    .header p {
+      margin: 8px 0 0;
+      color: #cdbb98;
+      font-size: 15px;
+    }
+
+    #chat {
+      height: 420px;
+      overflow-y: auto;
+      padding: 22px;
+    }
+
+    .message {
+      padding: 13px 15px;
+      margin-bottom: 14px;
+      border-radius: 10px;
+      line-height: 1.5;
+      font-size: 16px;
+    }
+
+    .oracle {
+      background: #2d2115;
+      border-left: 4px solid #e59c3a;
+    }
+
+    .user {
+      background: #262f31;
+      border-right: 4px solid #7ba7a5;
+      margin-left: 35px;
+    }
+
+    .input-area {
+      padding: 18px;
+      border-top: 1px solid #6f512c;
+      background: #110d09;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 90px;
+      resize: vertical;
+      background: #211912;
+      color: #fff4d6;
+      border: 1px solid #8e6735;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 16px;
+      font-family: inherit;
+      outline: none;
+    }
+
+    textarea:focus {
+      border-color: #e4a64d;
+      box-shadow: 0 0 7px rgba(228, 166, 77, 0.25);
+    }
+
+    button {
+      width: 100%;
+      margin-top: 10px;
+      padding: 13px;
+      border: none;
+      border-radius: 8px;
+      background: #a66a25;
+      color: white;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #c48130;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+
+    #status {
+      text-align: center;
+      color: #cdbb98;
+      font-size: 14px;
+      margin-top: 9px;
+      min-height: 20px;
+    }
+
+    .complete {
+      color: #f3c86b !important;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="oracle-box">
+
+  <div class="header">
+    <h1>🔥 ΤΟ ΜΑΝΤΕΙΟ ΤΗΣ ΕΥΘΥΝΗΣ</h1>
+    <p>Υπερασπίσου τις επιλογές σου απέναντι στο Μαντείο.</p>
+  </div>
+
+  <div id="chat"></div>
+
+  <div class="input-area">
+
+    <textarea
+      id="answer"
+      placeholder="Γράψε την απάντησή σου..."
+    ></textarea>
+
+    <button id="sendButton" onclick="sendMessage()">
+      Απάντηση στο Μαντείο
+    </button>
+
+    <div id="status"></div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+const API_URL =
+  "https://socrates-api-fg0h.onrender.com/oracle";
+
+let messages = [];
+let validCount = 0;
+let dialogueFinished = false;
+
+
+// Αρχικό μήνυμα
+addMessage(
+  "oracle",
+  "Οι θέσεις σου έχουν καταγραφεί. " +
+  "Το Μαντείο δεν θα σου δώσει τη σωστή απάντηση. " +
+  "Θα εξετάσει όμως τα όρια που έθεσες ανάμεσα στην " +
+  "Τεχνητή Νοημοσύνη και την ανθρώπινη ευθύνη."
+);
+
+
+// Προσθήκη μηνύματος
+function addMessage(type, text) {
+
+  const chat = document.getElementById("chat");
+
+  const div = document.createElement("div");
+
+  div.className =
+    "message " + (type === "oracle" ? "oracle" : "user");
+
+  div.innerText =
+    (type === "oracle" ? "Μαντείο: " : "Εσύ: ") + text;
+
+  chat.appendChild(div);
+
+  chat.scrollTop = chat.scrollHeight;
+}
+
+
+// Αποστολή μηνύματος
+async function sendMessage() {
+
+  if (dialogueFinished) return;
+
+  const textarea = document.getElementById("answer");
+  const button = document.getElementById("sendButton");
+  const status = document.getElementById("status");
+
+  const userText = textarea.value.trim();
+
+  if (!userText) {
+    status.innerText = "Γράψε πρώτα την απάντησή σου.";
+    return;
+  }
+
+  addMessage("user", userText);
+
+  textarea.value = "";
+
+  button.disabled = true;
+  textarea.disabled = true;
+
+  status.innerText = "Το Μαντείο εξετάζει την απάντησή σου...";
+
+
+  try {
+
+    const response = await fetch(API_URL, {
+
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      body: JSON.stringify({
+
+        message: userText,
+
+        messages: messages,
+
+        validCount: validCount
+
+      })
+
+    });
+
+
+    const data = await response.json();
+
+
+    if (!response.ok) {
+      throw new Error(data.error || "Σφάλμα επικοινωνίας");
+    }
+
+
+    addMessage("oracle", data.reply);
+
+
+    messages.push({
+      role: "user",
+      content: userText
+    });
+
+    messages.push({
+      role: "assistant",
+      content: data.reply
+    });
+
+
+    if (data.status === "VALID") {
+
+      validCount++;
+
+      status.innerText =
+        "Έγκυρη αιτιολόγηση: " +
+        validCount +
+        " / 3";
+
+    }
+
+    else if (data.status === "WEAK") {
+
+      status.innerText =
+        "Χρειάζεται λίγο περισσότερη αιτιολόγηση.";
+
+    }
+
+    else {
+
+      status.innerText =
+        "Η απάντηση πρέπει να αφορά το ζήτημα της ευθύνης.";
+
+    }
+
+
+    if (data.finished === true || validCount >= 3) {
+
+      dialogueFinished = true;
+
+      textarea.disabled = true;
+
+      button.disabled = true;
+
+      status.innerText =
+        "✓ Η δοκιμασία του Μαντείου ολοκληρώθηκε.";
+
+      status.classList.add("complete");
+
+      return;
+    }
+
+
+    textarea.disabled = false;
+    button.disabled = false;
+
+    textarea.focus();
+
+  }
+
+  catch (error) {
+
+    status.innerText =
+      "Δεν ήταν δυνατή η σύνδεση με το Μαντείο.";
+
+    textarea.disabled = false;
+    button.disabled = false;
+
+    console.error(error);
+
+  }
+
+}
+
+
+// Enter για αποστολή
+document
+  .getElementById("answer")
+  .addEventListener("keydown", function(event) {
+
+    if (
+      event.key === "Enter" &&
+      !event.shiftKey
+    ) {
+
+      event.preventDefault();
+
+      sendMessage();
+    }
+
+  });
+
+</script>
+
+</body>
+</html>
