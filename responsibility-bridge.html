@@ -3,30 +3,92 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Μετάβαση στο Μαντείο</title>
+
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #120d08;
+      color: #f4e6c4;
+      font-family: Georgia, "Times New Roman", serif;
+      text-align: center;
+    }
+
+    .box {
+      padding: 30px;
+    }
+
+    h2 {
+      color: #f5c46d;
+    }
+
+    p {
+      font-size: 18px;
+    }
+  </style>
 </head>
 
 <body>
 
-  <p>Οι θέσεις σου καταγράφηκαν.</p>
-  <p>Μετάβαση στο Μαντείο της Ευθύνης...</p>
+  <div class="box">
+    <h2>Οι θέσεις σου καταγράφηκαν</h2>
+    <p>Μετάβαση στο Μαντείο της Ευθύνης...</p>
+  </div>
+
 
   <script>
-    const params = new URLSearchParams(window.location.search);
 
+    // Παίρνουμε τις απαντήσεις που έστειλε το Tally
+    const params =
+      new URLSearchParams(window.location.search);
+
+
+    // Αποθηκεύουμε τις 4 απαντήσεις
     const responsibilityAnswers = {
-      support: params.get("support") || "",
-      evaluation: params.get("evaluation") || "",
-      decision: params.get("decision") || "",
-      boundary: params.get("boundary") || ""
+
+      support:
+        params.get("support") || "",
+
+      evaluation:
+        params.get("evaluation") || "",
+
+      decision:
+        params.get("decision") || "",
+
+      boundary:
+        params.get("boundary") || ""
+
     };
 
+
+    // Αποθήκευση ώστε να τις διαβάσει αργότερα το oracle.html
     localStorage.setItem(
       "responsibilityAnswers",
       JSON.stringify(responsibilityAnswers)
     );
 
-    window.location.replace("https://framevr.io/manteio");
+
+    // Μικρός έλεγχος στην κονσόλα
+    console.log(
+      "Απαντήσεις Ευθύνης:",
+      responsibilityAnswers
+    );
+
+
+    // Μετάβαση στο 3ο Frame
+    setTimeout(function () {
+
+      window.location.replace(
+        "https://framevr.io/manteio"
+      );
+
+    }, 800);
+
   </script>
 
 </body>
