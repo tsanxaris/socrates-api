@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Μετάβαση στο Μαντείο</title>
+</head>
+
+<body>
+
+  <p>Οι θέσεις σου καταγράφηκαν.</p>
+  <p>Μετάβαση στο Μαντείο της Ευθύνης...</p>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+
+    const responsibilityAnswers = {
+      support: params.get("support") || "",
+      evaluation: params.get("evaluation") || "",
+      decision: params.get("decision") || "",
+      boundary: params.get("boundary") || ""
+    };
+
+    localStorage.setItem(
+      "responsibilityAnswers",
+      JSON.stringify(responsibilityAnswers)
+    );
+
+    window.location.replace("https://framervr.io/manteio");
+  </script>
+
+</body>
+</html>
