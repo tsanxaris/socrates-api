@@ -186,93 +186,189 @@ let validCount = 0;
 let dialogueFinished = false;
 
 
-// Αρχικό μήνυμα
-addMessage(
-  "oracle",
-  "Οι θέσεις σου έχουν καταγραφεί. " +
-  "Το Μαντείο δεν θα σου δώσει τη σωστή απάντηση. " +
-  "Θα εξετάσει όμως τα όρια που έθεσες ανάμεσα στην " +
-  "Τεχνητή Νοημοσύνη και την ανθρώπινη ευθύνη."
-);
+// =====================================================
+// ΔΙΑΒΑΣΜΑ ΤΩΝ ΑΠΑΝΤΗΣΕΩΝ ΑΠΟ ΤΟ TALLY
+// =====================================================
 
+let responsibilityAnswers = null;
 
-// Προσθήκη μηνύματος
-function addMessage(type, text) {
+try {
 
-  const chat = document.getElementById("chat");
+  const savedAnswers =
+    localStorage.getItem("responsibilityAnswers");
 
-  const div = document.createElement("div");
+  if (savedAnswers) {
 
-  div.className =
-    "message " + (type === "oracle" ? "oracle" : "user");
+    const parsedAnswers =
+      JSON.parse(savedAnswers);
 
-  div.innerText =
-    (type === "oracle" ? "Μαντείο: " : "Εσύ: ") + text;
+    responsibilityAnswers = {
+      support: parsedAnswers.support || "",
+      evaluation: parsedAnswers.evaluation || "",
+      decision: parsedAnswers.decision || "",
+      boundary: parsedAnswers.boundary || ""
+    };
 
-  chat.appendChild(div);
+  }
 
-  chat.scrollTop = chat.scrollHeight;
+} catch (error) {
+
+  console.error(
+    "Δεν ήταν δυνατή η ανάγνωση των απαντήσεων:",
+    error
+  );
+
 }
 
 
-// Αποστολή μηνύματος
+// =====================================================
+// ΑΡΧΙΚΟ ΜΗΝΥΜΑ
+// =====================================================
+
+if (responsibilityAnswers) {
+
+  addMessage(
+    "oracle",
+    "Οι θέσεις σου έχουν καταγραφεί και το Μαντείο τις έχει μελετήσει. " +
+    "Δεν θα σου δώσει τη σωστή απάντηση. " +
+    "Θα εξετάσει όμως τα όρια που έθεσες ανάμεσα στην " +
+    "Τεχνητή Νοημοσύνη και την ανθρώπινη ευθύνη. " +
+    "Διατύπωσε τώρα τη θέση σου και υπερασπίσου την."
+  );
+
+} else {
+
+  addMessage(
+    "oracle",
+    "Το Μαντείο είναι έτοιμο να εξετάσει τη σκέψη σου. " +
+    "Πού θεωρείς ότι πρέπει να βρίσκεται το όριο ανάμεσα " +
+    "στην Τεχνητή Νοημοσύνη και στην ανθρώπινη ευθύνη;"
+  );
+
+}
+
+
+// =====================================================
+// ΠΡΟΣΘΗΚΗ ΜΗΝΥΜΑΤΟΣ
+// =====================================================
+
+function addMessage(type, text) {
+
+  const chat =
+    document.getElementById("chat");
+
+  const div =
+    document.createElement("div");
+
+  div.className =
+    "message " +
+    (type === "oracle" ? "oracle" : "user");
+
+  div.innerText =
+    (type === "oracle"
+      ? "Μαντείο: "
+      : "Εσύ: ") + text;
+
+  chat.appendChild(div);
+
+  chat.scrollTop =
+    chat.scrollHeight;
+}
+
+
+// =====================================================
+// ΑΠΟΣΤΟΛΗ ΜΗΝΥΜΑΤΟΣ
+// =====================================================
+
 async function sendMessage() {
 
   if (dialogueFinished) return;
 
-  const textarea = document.getElementById("answer");
-  const button = document.getElementById("sendButton");
-  const status = document.getElementById("status");
+  const textarea =
+    document.getElementById("answer");
 
-  const userText = textarea.value.trim();
+  const button =
+    document.getElementById("sendButton");
+
+  const status =
+    document.getElementById("status");
+
+  const userText =
+    textarea.value.trim();
+
 
   if (!userText) {
-    status.innerText = "Γράψε πρώτα την απάντησή σου.";
+
+    status.innerText =
+      "Γράψε πρώτα την απάντησή σου.";
+
     return;
   }
 
-  addMessage("user", userText);
+
+  addMessage(
+    "user",
+    userText
+  );
+
 
   textarea.value = "";
 
   button.disabled = true;
   textarea.disabled = true;
 
-  status.innerText = "Το Μαντείο εξετάζει την απάντησή σου...";
+  status.innerText =
+    "Το Μαντείο εξετάζει την απάντησή σου...";
 
 
   try {
 
-    const response = await fetch(API_URL, {
+    const response =
+      await fetch(
+        API_URL,
+        {
 
-      method: "POST",
+          method: "POST",
 
-      headers: {
-        "Content-Type": "application/json"
-      },
+          headers: {
+            "Content-Type": "application/json"
+          },
 
-      body: JSON.stringify({
+          body: JSON.stringify({
 
-        message: userText,
+            message: userText,
 
-        messages: messages,
+            messages: messages,
 
-        validCount: validCount
+            validCount: validCount,
 
-      })
+            responsibilityAnswers:
+              responsibilityAnswers
 
-    });
+          })
+
+        }
+      );
 
 
-    const data = await response.json();
+    const data =
+      await response.json();
 
 
     if (!response.ok) {
-      throw new Error(data.error || "Σφάλμα επικοινωνίας");
+
+      throw new Error(
+        data.error ||
+        "Σφάλμα επικοινωνίας"
+      );
+
     }
 
 
-    addMessage("oracle", data.reply);
+    addMessage(
+      "oracle",
+      data.reply
+    );
 
 
     messages.push({
@@ -280,11 +376,16 @@ async function sendMessage() {
       content: userText
     });
 
+
     messages.push({
       role: "assistant",
       content: data.reply
     });
 
+
+    // =================================================
+    // ΑΞΙΟΛΟΓΗΣΗ ΑΠΑΝΤΗΣΗΣ
+    // =================================================
 
     if (data.status === "VALID") {
 
@@ -304,26 +405,42 @@ async function sendMessage() {
 
     }
 
-    else {
+    else if (data.status === "OFFTOPIC") {
 
       status.innerText =
         "Η απάντηση πρέπει να αφορά το ζήτημα της ευθύνης.";
 
     }
 
+    else {
 
-    if (data.finished === true || validCount >= 3) {
+      status.innerText =
+        "Το Μαντείο δεν μπόρεσε να αξιολογήσει την απάντηση.";
+
+    }
+
+
+    // =================================================
+    // ΟΛΟΚΛΗΡΩΣΗ
+    // =================================================
+
+    if (
+      data.finished === true ||
+      data.done === true ||
+      validCount >= 3
+    ) {
 
       dialogueFinished = true;
 
       textarea.disabled = true;
-
       button.disabled = true;
 
       status.innerText =
-        "✓ Η δοκιμασία του Μαντείου ολοκληρώθηκε.";
+        "✓ Η Δοκιμασία της Ευθύνης ολοκληρώθηκε.";
 
-      status.classList.add("complete");
+      status.classList.add(
+        "complete"
+      );
 
       return;
     }
@@ -351,24 +468,38 @@ async function sendMessage() {
 }
 
 
-// Enter για αποστολή
+// =====================================================
+// ENTER ΓΙΑ ΑΠΟΣΤΟΛΗ
+// =====================================================
+
 document
   .getElementById("answer")
-  .addEventListener("keydown", function(event) {
+  .addEventListener(
+    "keydown",
+    function(event) {
 
-    if (
-      event.key === "Enter" &&
-      !event.shiftKey
-    ) {
+      if (
+        event.key === "Enter" &&
+        !event.shiftKey
+      ) {
 
-      event.preventDefault();
+        event.preventDefault();
 
-      sendMessage();
+        sendMessage();
+
+      }
+
     }
-
-  });
+  );
 
 </script>
 
 </body>
 </html>
+   
+ 
+
+
+  
+
+    
