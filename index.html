@@ -315,12 +315,10 @@ async function sendMessage() {
 
     // ================================
     // ΤΕΛΟΣ ΔΙΑΛΟΓΟΥ
+    // ΜΟΝΟ ΜΕ 3 ΕΓΚΥΡΕΣ ΑΠΑΝΤΗΣΕΙΣ
     // ================================
 
-    if (
-      data.done === true ||
-      validCount >= 3
-    ) {
+    if (validCount >= 3) {
 
       dialogueFinished = true;
 
@@ -464,3 +462,6 @@ document
 
 </body>
 </html>
+ 
+
+
