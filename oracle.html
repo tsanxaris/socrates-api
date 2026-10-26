@@ -144,6 +144,89 @@
       color: #f3c86b !important;
       font-weight: bold;
     }
+
+    /* =================================================
+       ΤΕΛΙΚΗ ΟΘΟΝΗ ΠΑΙΧΝΙΔΙΟΥ
+       ================================================= */
+
+    #endScreen {
+      display: none;
+      padding: 38px 32px 42px;
+      text-align: center;
+      animation: appear 1s ease;
+    }
+
+    #endScreen .symbol {
+      font-size: 58px;
+      margin-bottom: 12px;
+    }
+
+    #endScreen h2 {
+      margin: 0 0 8px;
+      color: #f5c46d;
+      font-size: 30px;
+      letter-spacing: 1px;
+    }
+
+    #endScreen h3 {
+      margin: 0 0 28px;
+      color: #e7b65f;
+      font-size: 19px;
+      font-weight: normal;
+    }
+
+    #endScreen p {
+      max-width: 620px;
+      margin: 0 auto 18px;
+      line-height: 1.7;
+      font-size: 17px;
+      color: #eadbb9;
+    }
+
+    #endScreen .final-quote {
+      margin: 28px auto;
+      padding: 18px;
+      max-width: 620px;
+      background: rgba(166, 106, 37, 0.12);
+      border-top: 1px solid #a77b3b;
+      border-bottom: 1px solid #a77b3b;
+      color: #f3c86b;
+      font-style: italic;
+      font-size: 18px;
+      line-height: 1.6;
+    }
+
+    #endScreen .game-over {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 14px 28px;
+      border: 1px solid #d59a43;
+      border-radius: 8px;
+      background: rgba(166, 106, 37, 0.22);
+      color: #ffd984;
+      font-size: 20px;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    #endScreen .final-note {
+      margin-top: 26px;
+      color: #a99878;
+      font-size: 14px;
+    }
+
+    @keyframes appear {
+      from {
+        opacity: 0;
+        transform: translateY(15px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
   </style>
 </head>
 
@@ -151,14 +234,14 @@
 
 <div class="oracle-box">
 
-  <div class="header">
+  <div class="header" id="oracleHeader">
     <h1>🔥 ΤΟ ΜΑΝΤΕΙΟ ΤΗΣ ΕΥΘΥΝΗΣ</h1>
     <p>Υπερασπίσου τις επιλογές σου απέναντι στο Μαντείο.</p>
   </div>
 
   <div id="chat"></div>
 
-  <div class="input-area">
+  <div class="input-area" id="inputArea">
 
     <textarea
       id="answer"
@@ -170,6 +253,51 @@
     </button>
 
     <div id="status"></div>
+
+  </div>
+
+
+  <!-- =================================================
+       ΤΕΛΙΚΗ ΟΘΟΝΗ
+       ================================================= -->
+
+  <div id="endScreen">
+
+    <div class="symbol">🏛️</div>
+
+    <h2>ΤΟ ΤΑΞΙΔΙ ΟΛΟΚΛΗΡΩΘΗΚΕ</h2>
+
+    <h3>Ο Αναζητητής της Γνώσης ολοκλήρωσε την πορεία του.</h3>
+
+    <p>
+      Πέρασες τις δοκιμασίες της
+      <strong>Κρίσης, της Αλήθειας και της Ευθύνης.</strong>
+    </p>
+
+    <p>
+      Εξέτασες τα τεκμήρια, αμφισβήτησες τη βεβαιότητα
+      της Τεχνητής Νοημοσύνης και αναζήτησες τα όρια
+      ανάμεσα στην αυτονομία της ΤΝ και την ανθρώπινη ευθύνη.
+    </p>
+
+    <p>
+      Δεν αναζήτησες απλώς μία σωστή απάντηση.
+      Χρειάστηκε να αιτιολογήσεις, να συγκρίνεις
+      και να υπερασπιστείς τις επιλογές σου.
+    </p>
+
+    <div class="final-quote">
+      «Η γνώση δεν είναι να αποδέχεσαι μια απάντηση.
+      Είναι να μπορείς να κρίνεις γιατί την αποδέχεσαι.»
+    </div>
+
+    <div class="game-over">
+      ✓ ΤΕΛΟΣ ΠΑΙΧΝΙΔΙΟΥ
+    </div>
+
+    <div class="final-note">
+      Η πορεία του Αναζητητή ολοκληρώθηκε.
+    </div>
 
   </div>
 
@@ -278,6 +406,64 @@ function addMessage(type, text) {
 
   chat.scrollTop =
     chat.scrollHeight;
+}
+
+
+// =====================================================
+// ΤΕΛΙΚΗ ΟΘΟΝΗ
+// =====================================================
+
+function showEndScreen() {
+
+  dialogueFinished = true;
+
+  const chat =
+    document.getElementById("chat");
+
+  const inputArea =
+    document.getElementById("inputArea");
+
+  const header =
+    document.getElementById("oracleHeader");
+
+  const endScreen =
+    document.getElementById("endScreen");
+
+
+  chat.style.display =
+    "none";
+
+  inputArea.style.display =
+    "none";
+
+
+  header.querySelector("h1").innerText =
+    "🔥 ΤΟ ΜΑΝΤΕΙΟ ΤΗΣ ΕΥΘΥΝΗΣ";
+
+  header.querySelector("p").innerText =
+    "Η τελευταία δοκιμασία ολοκληρώθηκε.";
+
+
+  endScreen.style.display =
+    "block";
+
+
+  try {
+
+    localStorage.setItem(
+      "gameCompleted",
+      "true"
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Δεν ήταν δυνατή η αποθήκευση της ολοκλήρωσης:",
+      error
+    );
+
+  }
+
 }
 
 
@@ -395,10 +581,16 @@ async function sendMessage() {
     if (data.status === "VALID") {
 
       if (typeof data.validCount === "number") {
-        validCount = data.validCount;
+
+        validCount =
+          data.validCount;
+
       } else {
+
         validCount++;
+
       }
+
 
       status.innerText =
         "Έγκυρη αιτιολόγηση: " +
@@ -431,23 +623,13 @@ async function sendMessage() {
 
 
     // =================================================
-    // ΟΛΟΚΛΗΡΩΣΗ
+    // ΟΛΟΚΛΗΡΩΣΗ ΠΑΙΧΝΙΔΙΟΥ
     // ΜΟΝΟ Ο SERVER ΑΠΟΦΑΣΙΖΕΙ
     // =================================================
 
     if (data.finished === true) {
 
-      dialogueFinished = true;
-
-      textarea.disabled = true;
-      button.disabled = true;
-
-      status.innerText =
-        "✓ Η Δοκιμασία της Ευθύνης ολοκληρώθηκε.";
-
-      status.classList.add(
-        "complete"
-      );
+      showEndScreen();
 
       return;
     }
@@ -503,9 +685,3 @@ document
 
 </body>
 </html>
-  
-  
-
-  
-
-    
