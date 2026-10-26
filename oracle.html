@@ -394,7 +394,11 @@ async function sendMessage() {
 
     if (data.status === "VALID") {
 
-      validCount++;
+      if (typeof data.validCount === "number") {
+        validCount = data.validCount;
+      } else {
+        validCount++;
+      }
 
       status.innerText =
         "Έγκυρη αιτιολόγηση: " +
@@ -413,7 +417,8 @@ async function sendMessage() {
     else if (data.status === "OFFTOPIC") {
 
       status.innerText =
-        "Η απάντηση πρέπει να αφορά το ζήτημα της ευθύνης.";
+        "Η απάντηση πρέπει να αφορά τις τρεις περιπτώσεις " +
+        "και το ζήτημα της ευθύνης.";
 
     }
 
@@ -427,13 +432,10 @@ async function sendMessage() {
 
     // =================================================
     // ΟΛΟΚΛΗΡΩΣΗ
+    // ΜΟΝΟ Ο SERVER ΑΠΟΦΑΣΙΖΕΙ
     // =================================================
 
-    if (
-      data.finished === true ||
-      data.done === true ||
-      validCount >= 3
-    ) {
+    if (data.finished === true) {
 
       dialogueFinished = true;
 
